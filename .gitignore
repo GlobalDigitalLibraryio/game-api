@@ -102,3 +102,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+.idea
+.serverless
+.requirements
+node_modules

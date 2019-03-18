@@ -1,0 +1,164 @@
+service: game-service
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: ${env:GDL_ENVIRONMENT}
+  region: eu-central-1
+  endpointType: PRIVATE
+  role: arn:aws:iam::${env:GDL_ACCOUNT}:role/${env:SERVERLESS_IAM_ROLE}
+  tags:
+    VERSION: "0.1"
+  deploymentBucket:
+    name: ${env:GDL_SERVERLESS_DEPLOYMENT_BUCKET}
+
+  resourcePolicy:
+    - Effect: Allow
+      Principal: "*"
+      Action: execute-api:Invoke
+      Resource:
+        - execute-api:/*/*/*
+      Condition:
+        StringEquals:
+          aws:SourceVpce:
+            - '${env:VPC_ENDPOINT}'
+
+  environment:
+    GAMES_TABLE: ${env:GAMES_TABLE}
+    LOCAL_DYNAMODB: ${env:LOCAL_DYNAMODB}
+
+package:
+  individually: true
+  exclude:
+    - ./**
+
+
+functions:
+  list_languages:
+    handler: wsgi_handler.handler
+    events:
+      - http:
+         path: /v1/languages
+         method: get
+    package:
+      include:
+        - functions/app.py
+        - functions/gdl/*.py
+
+  list_games:
+    handler: wsgi_handler.handler
+    events:
+      - http:
+          path: /v1/games
+          method: get
+          request:
+            parameters:
+              querystrings:
+                language: false
+    package:
+      include:
+        - functions/app.py
+        - functions/gdl/*.py
+
+  get_game:
+    handler: wsgi_handler.handler
+    events:
+      - http:
+          path: /v1/games/{uuid}
+          method: get
+          request:
+            parameters:
+              paths:
+                uuid: true
+    package:
+      include:
+        - functions/app.py
+        - functions/gdl/*.py
+
+  add_game:
+    handler: wsgi_handler.handler
+    events:
+      - http:
+          path: /v1/games
+          method: post
+    package:
+      include:
+        - functions/app.py
+        - functions/gdl/*.py
+
+  update_game:
+    handler: wsgi_handler.handler
+    events:
+      - http:
+          path: /v1/games/{uuid}
+          method: put
+          request:
+            parameters:
+              paths:
+                uuid: true
+    package:
+      include:
+        - functions/app.py
+        - functions/gdl/*.py
+
+  delete_game:
+      handler: wsgi_handler.handler
+      events:
+        - http:
+            path: /v1/games/{uuid}
+            method: delete
+            request:
+              parameters:
+                paths:
+                  uuid: true
+      package:
+        include:
+          - functions/app.py
+          - functions/gdl/*.py
+
+resources:
+  Resources:
+    gamesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${env:GAMES_TABLE}
+        AttributeDefinitions:
+          - AttributeName: game_uuid
+            AttributeType: S
+        KeySchema:
+          - AttributeName: game_uuid
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 1
+
+plugins:
+  - serverless-vpc-discovery
+  - serverless-python-requirements
+  - serverless-dynamodb-local
+  - serverless-wsgi
+  - serverless-plugin-warmup
+
+custom:
+  vpc:
+    vpcName: ${env:VPC}
+    subnetNames:
+      - '${env:GDL_ENVIRONMENT}.private_a.gdl'
+      - '${env:GDL_ENVIRONMENT}.private_b.gdl'
+    securityGroupNames:
+      - 'serverless-security_group'
+  wsgi:
+    app: functions/app.app
+    packRequirements: false
+  dynamodb:
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+  pythonRequirements:
+    dockerizePip: non-linux
+    slim: true
+  warmup:
+    enabled:
+      - prod
+
