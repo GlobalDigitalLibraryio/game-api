@@ -2,7 +2,7 @@ from flask import jsonify
 from language_tags import tags
 
 
-class ListLanguages:
+class ListLanguages():
     def __init__(self, games_table):
         self.games_table = games_table
 

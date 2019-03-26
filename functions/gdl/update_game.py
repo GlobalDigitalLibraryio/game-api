@@ -2,6 +2,7 @@ from flask import jsonify
 from .game import Game
 from . import not_found
 
+
 class UpdateGame:
 
     def __init__(self, games_table):
@@ -20,4 +21,4 @@ class UpdateGame:
             self.games_table.put_item(Item=to_update)
             return jsonify(to_update)
         else:
-            return not_found(message="Game with id {} was not found".format(game_uuid))
+            return not_found("Game with id {} was not found".format(game_uuid))

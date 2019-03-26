@@ -26,6 +26,8 @@ provider:
   environment:
     GAMES_TABLE: ${env:GAMES_TABLE}
     LOCAL_DYNAMODB: ${env:LOCAL_DYNAMODB}
+    GDL_ENVIRONMENT: ${env:GDL_ENVIRONMENT}
+    IMAGE_API_OFFLINE_ADDRESS: ${env:IMAGE_API_OFFLINE_ADDRESS}
 
 package:
   individually: true
@@ -38,18 +40,19 @@ functions:
     handler: wsgi_handler.handler
     events:
       - http:
-         path: /v1/languages
+         path: /game-service/v1/languages
          method: get
     package:
       include:
         - functions/app.py
         - functions/gdl/*.py
+        - functions/gdl/integration/*.py
 
   list_games:
     handler: wsgi_handler.handler
     events:
       - http:
-          path: /v1/games
+          path: /game-service/v1/games
           method: get
           request:
             parameters:
@@ -59,12 +62,13 @@ functions:
       include:
         - functions/app.py
         - functions/gdl/*.py
+        - functions/gdl/integration/*.py
 
   get_game:
     handler: wsgi_handler.handler
     events:
       - http:
-          path: /v1/games/{uuid}
+          path: /game-service/v1/games/{uuid}
           method: get
           request:
             parameters:
@@ -74,23 +78,25 @@ functions:
       include:
         - functions/app.py
         - functions/gdl/*.py
+        - functions/gdl/integration/*.py
 
   add_game:
     handler: wsgi_handler.handler
     events:
       - http:
-          path: /v1/games
+          path: /game-service/v1/games
           method: post
     package:
       include:
         - functions/app.py
         - functions/gdl/*.py
+        - functions/gdl/integration/*.py
 
   update_game:
     handler: wsgi_handler.handler
     events:
       - http:
-          path: /v1/games/{uuid}
+          path: /game-service/v1/games/{uuid}
           method: put
           request:
             parameters:
@@ -100,12 +106,13 @@ functions:
       include:
         - functions/app.py
         - functions/gdl/*.py
+        - functions/gdl/integration/*.py
 
   delete_game:
       handler: wsgi_handler.handler
       events:
         - http:
-            path: /v1/games/{uuid}
+            path: /game-service/v1/games/{uuid}
             method: delete
             request:
               parameters:
@@ -115,6 +122,7 @@ functions:
         include:
           - functions/app.py
           - functions/gdl/*.py
+          - functions/gdl/integration/*.py
 
 resources:
   Resources:

@@ -1,6 +1,8 @@
 import uuid
+
 from jsonschema import FormatChecker
 from language_tags import tags
+
 
 class Game:
     schema = {
@@ -15,10 +17,10 @@ class Game:
             'license': {'type': 'string'},
             'source': {'type': 'string'},
             'publisher': {'type': 'string'},
-            'coverphoto': {'type': 'string'},
+            'coverimage': {'type': 'integer'},
         },
         'required': ['external_id', 'title', 'description', 'language', 'url', 'license', 'source', 'publisher',
-                     'coverphoto']
+                     'coverimage']
     }
 
     format_checker = FormatChecker()
@@ -28,8 +30,7 @@ class Game:
     def is_bcp_47(value):
         return tags.tag(value).valid
 
-
-    def __init__(self, external_id, title, description, language, url, license, source, publisher, coverphoto,
+    def __init__(self, external_id, title, description, language, url, license, source, publisher, coverimage,
                  game_uuid=str(uuid.uuid4())):
         self.game_uuid = game_uuid
         self.external_id = external_id
@@ -40,7 +41,7 @@ class Game:
         self.license = license
         self.source = source
         self.publisher = publisher
-        self.coverphoto = coverphoto
+        self.coverimage = coverimage
 
     @staticmethod
     def apply_defaults(game_dict):
@@ -52,7 +53,7 @@ class Game:
                     license=game_dict['license'],
                     source=game_dict['source'],
                     publisher=game_dict['publisher'],
-                    coverphoto=game_dict['coverphoto'],
+                    coverimage=game_dict['coverimage'],
                     game_uuid=game_dict.get('game_uuid', str(uuid.uuid4())))
 
     def to_dict(self):
@@ -66,5 +67,14 @@ class Game:
             'license': self.license,
             'source': self.source,
             'publisher': self.publisher,
-            'coverphoto': self.coverphoto
+            'coverimage': self.coverimage
         }
+
+    def api_response(self, image_api_client):
+        api_dict = self.to_dict()
+        cover_image_details = image_api_client.metadata_for(self.coverimage)
+        del api_dict['coverimage']
+        if cover_image_details:
+            api_dict['coverimage'] = cover_image_details.as_dict()
+
+        return api_dict
