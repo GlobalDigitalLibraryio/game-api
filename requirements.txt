@@ -8,6 +8,7 @@ click==6.7
 docutils==0.14
 Flask==0.12.2
 Flask-json-schema==0.0.5
+flask-restplus==0.12.1
 idna==2.8
 itsdangerous==0.24
 Jinja2==2.9.6

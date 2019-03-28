@@ -44,9 +44,7 @@ functions:
          method: get
     package:
       include:
-        - functions/app.py
         - functions/gdl/*.py
-        - functions/gdl/integration/*.py
 
   list_games:
     handler: wsgi_handler.handler
@@ -60,9 +58,7 @@ functions:
                 language: false
     package:
       include:
-        - functions/app.py
         - functions/gdl/*.py
-        - functions/gdl/integration/*.py
 
   get_game:
     handler: wsgi_handler.handler
@@ -76,9 +72,7 @@ functions:
                 uuid: true
     package:
       include:
-        - functions/app.py
         - functions/gdl/*.py
-        - functions/gdl/integration/*.py
 
   add_game:
     handler: wsgi_handler.handler
@@ -88,9 +82,7 @@ functions:
           method: post
     package:
       include:
-        - functions/app.py
         - functions/gdl/*.py
-        - functions/gdl/integration/*.py
 
   update_game:
     handler: wsgi_handler.handler
@@ -104,9 +96,7 @@ functions:
                 uuid: true
     package:
       include:
-        - functions/app.py
         - functions/gdl/*.py
-        - functions/gdl/integration/*.py
 
   delete_game:
       handler: wsgi_handler.handler
@@ -120,9 +110,17 @@ functions:
                   uuid: true
       package:
         include:
-          - functions/app.py
           - functions/gdl/*.py
-          - functions/gdl/integration/*.py
+
+  documentation:
+      handler: wsgi_handler.handler
+      events:
+        - http:
+            path: /game-service/api-docs
+            method: get
+      package:
+        include:
+          - functions/gdl/*.py
 
 resources:
   Resources:
@@ -156,7 +154,7 @@ custom:
     securityGroupNames:
       - 'serverless-security_group'
   wsgi:
-    app: functions/app.app
+    app: functions/gdl/app.app
     packRequirements: false
   dynamodb:
     start:
