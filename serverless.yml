@@ -30,97 +30,20 @@ provider:
     IMAGE_API_OFFLINE_ADDRESS: ${env:IMAGE_API_OFFLINE_ADDRESS}
 
 package:
-  individually: true
+  individually: false
   exclude:
     - ./**
+  include:
+    - functions/gdl/*.py
 
 
 functions:
-  list_languages:
+  app:
     handler: wsgi_handler.handler
     events:
-      - http:
-         path: /game-service/v1/languages
-         method: get
-    package:
-      include:
-        - functions/gdl/*.py
+      - http: ANY /
+      - http: 'ANY {proxy+}'
 
-  list_games:
-    handler: wsgi_handler.handler
-    events:
-      - http:
-          path: /game-service/v1/games
-          method: get
-          request:
-            parameters:
-              querystrings:
-                language: false
-    package:
-      include:
-        - functions/gdl/*.py
-
-  get_game:
-    handler: wsgi_handler.handler
-    events:
-      - http:
-          path: /game-service/v1/games/{uuid}
-          method: get
-          request:
-            parameters:
-              paths:
-                uuid: true
-    package:
-      include:
-        - functions/gdl/*.py
-
-  add_game:
-    handler: wsgi_handler.handler
-    events:
-      - http:
-          path: /game-service/v1/games
-          method: post
-    package:
-      include:
-        - functions/gdl/*.py
-
-  update_game:
-    handler: wsgi_handler.handler
-    events:
-      - http:
-          path: /game-service/v1/games/{uuid}
-          method: put
-          request:
-            parameters:
-              paths:
-                uuid: true
-    package:
-      include:
-        - functions/gdl/*.py
-
-  delete_game:
-      handler: wsgi_handler.handler
-      events:
-        - http:
-            path: /game-service/v1/games/{uuid}
-            method: delete
-            request:
-              parameters:
-                paths:
-                  uuid: true
-      package:
-        include:
-          - functions/gdl/*.py
-
-  documentation:
-      handler: wsgi_handler.handler
-      events:
-        - http:
-            path: /game-service/api-docs
-            method: get
-      package:
-        include:
-          - functions/gdl/*.py
 
 resources:
   Resources:

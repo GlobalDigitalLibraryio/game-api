@@ -50,7 +50,7 @@ class Games(Resource):
     @API.marshal_with(game)
     @API.expect(game, validate=True)
     @API.response(code=400, description='When a validation error occurs', model=validation_error)
-    @API.response(403, 'Morra DI')
+    @API.response(code=403, description='Not authorized')
     def post(self):
         GDLConfig.JWT_VALIDATOR.verify_role(flask.request, 'games:write', API)
         to_add = Game.to_db_structure(API.payload)
@@ -63,7 +63,7 @@ class Gamer(Resource):
 
     @API.doc('Get information about a single game')
     @API.marshal_with(game)
-    @API.response(404, 'Not Found')
+    @API.response(code=404, description='Not Found')
     def get(self, game_uuid):
         result = GDLConfig.GAMES_TABLE.get_item(Key={'game_uuid': game_uuid})
         if result.get('Item'):
@@ -75,6 +75,8 @@ class Gamer(Resource):
     @API.expect(game, validate=True)
     @API.marshal_with(game)
     @API.response(code=400, description='When a validation error occurs', model=validation_error)
+    @API.response(code=403, description='Not authorized')
+    @API.response(code=404, description='Not Found')
     def put(self, game_uuid):
         GDLConfig.JWT_VALIDATOR.verify_role(flask.request, 'games:write', API)
         result = GDLConfig.GAMES_TABLE.get_item(Key={'game_uuid': game_uuid})
