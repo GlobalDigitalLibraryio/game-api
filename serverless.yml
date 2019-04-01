@@ -1,0 +1,128 @@
+service: game-service
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: ${env:GDL_ENVIRONMENT}
+  region: eu-central-1
+  endpointType: PRIVATE
+  role: arn:aws:iam::${env:GDL_ACCOUNT}:role/${env:SERVERLESS_IAM_ROLE}
+  tags:
+    VERSION: "0.1"
+  deploymentBucket:
+    name: ${env:GDL_SERVERLESS_DEPLOYMENT_BUCKET}
+
+  resourcePolicy:
+    - Effect: Allow
+      Principal: "*"
+      Action: execute-api:Invoke
+      Resource:
+        - execute-api:/*/*/*
+      Condition:
+        StringEquals:
+          aws:SourceVpce:
+            - '${env:VPC_ENDPOINT}'
+
+  environment:
+    GAMES_TABLE: ${env:GAMES_TABLE}
+    LOCAL_DYNAMODB: ${env:LOCAL_DYNAMODB}
+    GDL_ENVIRONMENT: ${env:GDL_ENVIRONMENT}
+    IMAGE_API_OFFLINE_ADDRESS: ${env:IMAGE_API_OFFLINE_ADDRESS}
+
+package:
+  individually: false
+  exclude:
+    - ./**
+  include:
+    - functions/gdl/*.py
+
+
+functions:
+  app:
+    handler: wsgi_handler.handler
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
+
+
+resources:
+  Resources:
+    gamesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${env:GAMES_TABLE}
+        AttributeDefinitions:
+          - AttributeName: game_uuid
+            AttributeType: S
+          - AttributeName: external_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: game_uuid
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: external_id-index
+            KeySchema:
+              - AttributeName: external_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: '5'
+              WriteCapacityUnits: '5'
+
+plugins:
+  - serverless-vpc-discovery
+  - serverless-python-requirements
+  - serverless-dynamodb-local
+  - serverless-wsgi
+  - serverless-plugin-warmup
+  - serverless-plugin-aws-alerts
+
+custom:
+  vpc:
+    vpcName: ${env:VPC}
+    subnetNames:
+      - '${env:GDL_ENVIRONMENT}.private_a.gdl'
+      - '${env:GDL_ENVIRONMENT}.private_b.gdl'
+    securityGroupNames:
+      - 'serverless-security_group'
+  wsgi:
+    app: functions/gdl/app.app
+    packRequirements: false
+  dynamodb:
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+  pythonRequirements:
+    dockerizePip: non-linux
+    slim: true
+  warmup:
+    enabled:
+      - prod
+      - test
+  alerts:
+    stages:
+      - prod
+      - test
+    topics:
+      alarm: ${env:GDL_SURVEILLANCE_SNS_ARN, 'DEV'}
+    alarms:
+      - functionThrottles
+      - functionErrors
+      - functionInvocations
+      - functionDuration
+    definitions:
+      functionDuration:
+        namespace: 'AWS/Lambda'
+        metric: Duration
+        threshold: 500
+        statistic: Average
+        period: 60
+        evaluationPeriods: 2
+        comparisonOperator: GreaterThanOrEqualToThreshold
+        treatMissingData: missing
+
