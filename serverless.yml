@@ -79,6 +79,7 @@ plugins:
   - serverless-dynamodb-local
   - serverless-wsgi
   - serverless-plugin-warmup
+  - serverless-plugin-aws-alerts
 
 custom:
   vpc:
@@ -102,4 +103,14 @@ custom:
   warmup:
     enabled:
       - prod
+  alerts:
+    stages:
+      - prod
+    topics:
+      alarm: ${env:GDL_SURVEILLANCE_SNS_ARN, 'DEV'}
+    alarms:
+      - functionThrottles
+      - functionErrors
+      - functionInvocations
+      - functionDuration
 
