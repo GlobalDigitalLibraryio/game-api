@@ -54,12 +54,24 @@ resources:
         AttributeDefinitions:
           - AttributeName: game_uuid
             AttributeType: S
+          - AttributeName: external_id
+            AttributeType: S
         KeySchema:
           - AttributeName: game_uuid
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: external_id-index
+            KeySchema:
+              - AttributeName: external_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: '5'
+              WriteCapacityUnits: '5'
 
 plugins:
   - serverless-vpc-discovery

@@ -1,9 +1,8 @@
 import flask
-from boto3.dynamodb.conditions import Attr
 from flask_restplus import Resource, Namespace, fields
 from language_tags import tags
 
-from models import Game
+from game_repository import GameRepository
 from gdl_config import GDLConfig
 
 API = Namespace('games', description='Game related operations')
@@ -28,23 +27,22 @@ game = API.model('Game', {
                                 description='Information about the cover image of the game')
 })
 
-
 validation_error = API.model('ValidationError', {
     'message': fields.String(required=False, description='Description of the error'),
     'errors': fields.Raw(description='Detailed information about fields that did not pass validation')
 })
 
+game_repository = GameRepository(GDLConfig.GAMES_TABLE)
+
 
 @API.route('/', strict_slashes=False)
 class Games(Resource):
 
-    @API.doc('List of available games')
+    @API.doc('List of available games', params={'language': 'Optional BCP47 language code to filter results'})
     @API.marshal_list_with(game, skip_none=True)
     def get(self):
         tag = tags.tag(flask.request.args.get('language'))
-        items = GDLConfig.GAMES_TABLE.scan(
-            FilterExpression=Attr('language').eq(str(tag))) if tag.valid else GDLConfig.GAMES_TABLE.scan()
-        return [Game.to_api_structure(x) for x in items['Items']]
+        return game_repository.all_with_language(str(tag)) if tag.valid else game_repository.all()
 
     @API.doc('Add a game', security='oauth2')
     @API.marshal_with(game)
@@ -53,9 +51,7 @@ class Games(Resource):
     @API.response(code=403, description='Not authorized')
     def post(self):
         GDLConfig.JWT_VALIDATOR.verify_role(flask.request, 'games:write', API)
-        to_add = Game.to_db_structure(API.payload)
-        GDLConfig.GAMES_TABLE.put_item(Item=to_add)
-        return Game.to_api_structure(to_add)
+        return game_repository.add(API.payload)
 
 
 @API.route("/<string:game_uuid>", strict_slashes=False)
@@ -65,10 +61,8 @@ class Gamer(Resource):
     @API.marshal_with(game)
     @API.response(code=404, description='Not Found')
     def get(self, game_uuid):
-        result = GDLConfig.GAMES_TABLE.get_item(Key={'game_uuid': game_uuid})
-        if result.get('Item'):
-            return Game.to_api_structure(result['Item'])
-        else:
+        response = game_repository.with_uuid(game_uuid)
+        return response if response else \
             API.abort(404, "Game with id {} was not found.".format(game_uuid))
 
     @API.doc('Update information about a game', security='oauth2')
@@ -79,19 +73,25 @@ class Gamer(Resource):
     @API.response(code=404, description='Not Found')
     def put(self, game_uuid):
         GDLConfig.JWT_VALIDATOR.verify_role(flask.request, 'games:write', API)
-        result = GDLConfig.GAMES_TABLE.get_item(Key={'game_uuid': game_uuid})
-        if result.get('Item'):
-            to_update = Game.to_db_structure(API.payload)
-            to_update['game_uuid'] = game_uuid
-
-            GDLConfig.GAMES_TABLE.put_item(Item=to_update)
-            return Game.to_api_structure(to_update)
-        else:
+        response = game_repository.update(game_uuid, API.payload)
+        if not response:
             API.abort(404, "Game with id {} was not found".format(game_uuid))
+        return response
 
     @API.doc('Delete a game', security='oauth2')
     def delete(self, game_uuid):
         GDLConfig.JWT_VALIDATOR.verify_role(flask.request, 'games:write', API)
-        GDLConfig.GAMES_TABLE.delete_item(Key={'game_uuid': game_uuid})
+        game_repository.delete(game_uuid)
         return '', 204
+
+
+@API.route("/extern/<string:external_id>", strict_slashes=False)
+@API.doc(False)
+class InternGame(Resource):
+
+    def get(self, external_id):
+        response = game_repository.with_external_id(external_id)
+        if not response:
+            API.abort(404, "Game with external_id {} was not found.".format(external_id))
+        return response
 

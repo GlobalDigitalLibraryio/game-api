@@ -22,7 +22,7 @@ authorizations = {
 api = Api(blueprint, description="Api for retrieving games from the GDL", authorizations=authorizations, version='1.0',
           terms_url='https://digitallibrary.io', contact='Christer Gundersen',
           contact_email='christer@digitallibrary.io', contact_url='https://digitallibrary.io',
-          license='Apache License 2.0', license_url='https://www.apache.org/licenses/LICENSE-2.0')
+          license='Apache License 2.0', license_url='https://www.apache.org/licenses/LICENSE-2.0', doc=False)
 
 api.add_namespace(language_controller.API, path='/languages')
 api.add_namespace(game_controller.API, path='/games')
