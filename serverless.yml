@@ -103,9 +103,11 @@ custom:
   warmup:
     enabled:
       - prod
+      - test
   alerts:
     stages:
       - prod
+      - test
     topics:
       alarm: ${env:GDL_SURVEILLANCE_SNS_ARN, 'DEV'}
     alarms:
@@ -113,4 +115,14 @@ custom:
       - functionErrors
       - functionInvocations
       - functionDuration
+    definitions:
+      functionDuration:
+        namespace: 'AWS/Lambda'
+        metric: Duration
+        threshold: 500
+        statistic: Average
+        period: 60
+        evaluationPeriods: 2
+        comparisonOperator: GreaterThanOrEqualToThreshold
+        treatMissingData: missing
 
