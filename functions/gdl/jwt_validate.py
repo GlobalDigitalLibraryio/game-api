@@ -31,7 +31,6 @@ class JWTValidator:
         roles = self.get_roles(self.extract_token(request))
         if role not in roles:
             api.abort(403, "Missing required role")
-            # raise MissingRoleError("Access denied. Missing required role.")
 
     def require_role(self, request, role):
         def decorator(f):
