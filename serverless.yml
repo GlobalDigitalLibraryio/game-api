@@ -103,11 +103,9 @@ custom:
   warmup:
     enabled:
       - prod
-      - test
   alerts:
     stages:
       - prod
-      - test
     topics:
       alarm: ${env:GDL_SURVEILLANCE_SNS_ARN, 'DEV'}
     alarms:
