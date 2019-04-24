@@ -103,7 +103,6 @@ custom:
   warmup:
     enabled:
       - prod
-      - test
   alerts:
     stages:
       - prod
