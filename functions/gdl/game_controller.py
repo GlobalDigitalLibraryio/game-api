@@ -41,8 +41,8 @@ class Games(Resource):
     @API.doc('List of available games', params={'language': 'Optional BCP47 language code to filter results'})
     @API.marshal_list_with(game, skip_none=True)
     def get(self):
-        tag = tags.tag(flask.request.args.get('language'))
-        return game_repository.all_with_language(str(tag)) if tag.valid else game_repository.all()
+        lang = flask.request.args.get('language')
+        return game_repository.all_with_language(lang) if lang else game_repository.all()
 
     @API.doc('Add a game', security='oauth2')
     @API.marshal_with(game)
