@@ -25,8 +25,23 @@ class GameRepository:
         else:
             return None
 
-    def all(self):
-        return [Game.to_api_structure(x) for x in self.game_table.scan()['Items']]
+    def all(self, page, page_size):
+        data = self.game_table.scan()['Items']
+        totalCount = len(data)
+        if not page:
+            page = 1
+        if not page_size:
+            page_size = 10
+
+        start_index = page_size * (page - 1 )
+        end_index = page_size * page
+        data = data[start_index:end_index]
+        return {
+            "totalCount": totalCount,
+            "page": page,
+            "pageSize": page_size,
+            "results": [Game.to_api_structure(x) for x in data]
+        }
 
     def all_with_language(self, language):
         items = self.game_table.scan(FilterExpression=Attr('language').eq(language))

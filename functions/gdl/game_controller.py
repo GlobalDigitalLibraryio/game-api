@@ -27,6 +27,14 @@ game = API.model('Game', {
                                 description='Information about the cover image of the game')
 })
 
+game_list = API.model('GameList', {
+    'totalCount': fields.Integer(required=True, description="Total amount of games."),
+    'page': fields.Integer(required=True, description="The page number of the search hits to display."),
+    'pageSize': fields.Integer(required=True, description="The number of search hits to display for each page."),
+    'results': fields.List(
+        fields.Nested(game, required=True, description='Game data', skip_none=True), skip_none=True),
+})
+
 validation_error = API.model('ValidationError', {
     'message': fields.String(required=False, description='Description of the error'),
     'errors': fields.Raw(description='Detailed information about fields that did not pass validation')
@@ -38,11 +46,24 @@ game_repository = GameRepository(GDLConfig.GAMES_TABLE)
 @API.route('/', strict_slashes=False)
 class Games(Resource):
 
-    @API.doc('List of available games', params={'language': 'Optional BCP47 language code to filter results'})
-    @API.marshal_list_with(game, skip_none=True)
+    @API.doc('List of available games', params={'language': 'Optional BCP47 language code to filter results', 'page': 'Return results for this page', 'page-size': 'Return this many results per page.' })
+    @API.marshal_with(game_list, skip_none=True)
     def get(self):
         lang = flask.request.args.get('language')
-        return game_repository.all_with_language(lang) if lang else game_repository.all()
+        page = flask.request.args.get('page')
+        page_size = flask.request.args.get('page-size')
+        if page:
+            try:
+                page = int(page)
+            except ValueError:
+                API.abort(400, "Invalid page integer: {}".format(page))
+        if page_size:
+            try:
+                page_size = int(page_size)
+            except ValueError:
+                API.abort(400, "Invalid page_size integer: {}".format(page_size))
+
+        return game_repository.all_with_language(lang) if lang else game_repository.all(page, page_size)
 
     @API.doc('Add a game', security='oauth2')
     @API.marshal_with(game)
