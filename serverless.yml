@@ -93,6 +93,8 @@ custom:
     app: functions/gdl/app.app
     packRequirements: false
   dynamodb:
+    stages:
+      - local
     start:
       port: 8000
       inMemory: true
