@@ -13,6 +13,11 @@ cover_image = API.model('CoverImage', {
     'alttext': fields.String(required=False, description='An alternative text for the image')
 })
 
+lang_model = API.model('Language', {
+    'code': fields.String(required=True, description="BCP47 language code"),
+    'name': fields.String(required=True, description="Language description of language code")
+})
+
 game = API.model('Game', {
     'game_uuid': fields.String(required=False, description='The unique identifier for this Game'),
     'external_id': fields.String(required=True, description='Vendor ID for the game'),
@@ -31,6 +36,8 @@ game_list = API.model('GameList', {
     'totalCount': fields.Integer(required=True, description="Total amount of games."),
     'page': fields.Integer(required=True, description="The page number of the search hits to display."),
     'pageSize': fields.Integer(required=True, description="The number of search hits to display for each page."),
+    'language': fields.Nested(lang_model, required=True, skip_none=True,
+                            description='Language model'),
     'results': fields.List(
         fields.Nested(game, required=True, description='Game data', skip_none=True), skip_none=True),
 })
@@ -49,21 +56,11 @@ class Games(Resource):
     @API.doc('List of available games', params={'language': 'Optional BCP47 language code to filter results', 'page': 'Return results for this page', 'page-size': 'Return this many results per page.' })
     @API.marshal_with(game_list, skip_none=True)
     def get(self):
-        lang = flask.request.args.get('language')
-        page = flask.request.args.get('page')
-        page_size = flask.request.args.get('page-size')
-        if page:
-            try:
-                page = int(page)
-            except ValueError:
-                API.abort(400, "Invalid page integer: {}".format(page))
-        if page_size:
-            try:
-                page_size = int(page_size)
-            except ValueError:
-                API.abort(400, "Invalid page_size integer: {}".format(page_size))
-
-        return game_repository.all_with_language(lang) if lang else game_repository.all(page, page_size)
+        lang = flask.request.args.get('language', default='en')
+        page = flask.request.args.get('page', default=1, type=int)
+        page_size = flask.request.args.get('page-size', default=10, type=int)
+        
+        return game_repository.all(lang, page, page_size)
 
     @API.doc('Add a game', security='oauth2')
     @API.marshal_with(game)

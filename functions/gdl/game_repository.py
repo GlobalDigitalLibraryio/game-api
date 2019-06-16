@@ -1,4 +1,5 @@
 from boto3.dynamodb.conditions import Attr, Key
+from language_tags import tags
 
 from models import Game, ValidationError
 
@@ -25,27 +26,33 @@ class GameRepository:
         else:
             return None
 
-    def all(self, page, page_size):
-        data = self.game_table.scan()['Items']
+    def all(self, lang, page, page_size):
+        data = self.game_table.scan(FilterExpression=Attr('language').eq(lang))['Items']
         totalCount = len(data)
-        if not page:
-            page = 1
-        if not page_size:
-            page_size = 10
 
-        start_index = page_size * (page - 1 )
+        if not tags.check(lang):
+            lang = 'en'
+
+        lang_name = tags.description(lang)[0]
+
+        if not 1 < page_size <= totalCount:
+            page_size = totalCount
+
+        start_index = page_size * (page - 1)
         end_index = page_size * page
+
         data = data[start_index:end_index]
+
         return {
             "totalCount": totalCount,
             "page": page,
             "pageSize": page_size,
+            "language": {
+                "code": lang,
+                "name": lang_name
+            },
             "results": [Game.to_api_structure(x) for x in data]
         }
-
-    def all_with_language(self, language):
-        items = self.game_table.scan(FilterExpression=Attr('language').eq(language))
-        return [Game.to_api_structure(x) for x in items['Items']]
 
     def add(self, game_json):
         to_add = Game.to_db_structure(game_json)
