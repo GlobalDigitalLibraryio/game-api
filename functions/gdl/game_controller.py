@@ -1,51 +1,13 @@
 import flask
 from flask_restplus import Resource, Namespace, fields
 from language_tags import tags
+from game_model import Game, GameResponse
+from validation_model import ValidationError
 
 from game_repository import GameRepository
 from gdl_config import GDLConfig
 
 API = Namespace('games', description='Game related operations')
-
-cover_image = API.model('CoverImage', {
-    'imageId': fields.Integer(required=True, description='Unique identifier of the image'),
-    'url': fields.String(required=False, description='The url for where the image can be downloaded'),
-    'alttext': fields.String(required=False, description='An alternative text for the image')
-})
-
-lang_model = API.model('Language', {
-    'code': fields.String(required=True, description="BCP47 language code"),
-    'name': fields.String(required=True, description="Language description of language code")
-})
-
-game = API.model('Game', {
-    'game_uuid': fields.String(required=False, description='The unique identifier for this Game'),
-    'external_id': fields.String(required=True, description='Vendor ID for the game'),
-    'title': fields.String(required=True, description='The title of the game'),
-    'description': fields.String(required=True, description='A description of the game'),
-    'language': fields.String(required=True, description='In which language the game is. Represented as a BCP47 tag'),
-    'url': fields.String(required=True, description='The url for where the game is found'),
-    'license': fields.String(required=True, description='Licensing information about the game'),
-    'source': fields.String(required=True, description='From whom GDL has aquired the game'),
-    'publisher': fields.String(required=True, description='The publisher of the game'),
-    'coverimage': fields.Nested(cover_image, required=True, skip_none=True,
-                                description='Information about the cover image of the game')
-})
-
-game_list = API.model('GameList', {
-    'totalCount': fields.Integer(required=True, description="Total amount of games."),
-    'page': fields.Integer(required=True, description="The page number of the search hits to display."),
-    'pageSize': fields.Integer(required=True, description="The number of search hits to display for each page."),
-    'language': fields.Nested(lang_model, required=True, skip_none=True,
-                            description='Language model'),
-    'results': fields.List(
-        fields.Nested(game, required=True, description='Game data', skip_none=True), skip_none=True),
-})
-
-validation_error = API.model('ValidationError', {
-    'message': fields.String(required=False, description='Description of the error'),
-    'errors': fields.Raw(description='Detailed information about fields that did not pass validation')
-})
 
 game_repository = GameRepository(GDLConfig.GAMES_TABLE)
 
@@ -54,7 +16,7 @@ game_repository = GameRepository(GDLConfig.GAMES_TABLE)
 class Games(Resource):
 
     @API.doc('List of available games', params={'language': 'Optional BCP47 language code to filter results', 'page': 'Return results for this page', 'page-size': 'Return this many results per page.' })
-    @API.marshal_with(game_list, skip_none=True)
+    @API.marshal_with(GameResponse.model, skip_none=True)
     def get(self):
         lang = flask.request.args.get('language', default='en')
         page = flask.request.args.get('page', default=1, type=int)
@@ -63,9 +25,9 @@ class Games(Resource):
         return game_repository.all(lang, page, page_size)
 
     @API.doc('Add a game', security='oauth2')
-    @API.marshal_with(game)
-    @API.expect(game, validate=True)
-    @API.response(code=400, description='When a validation error occurs', model=validation_error)
+    @API.marshal_with(Game.model)
+    @API.expect(Game.field_doc, validate=True)
+    @API.response(code=400, description='When a validation error occurs', model=ValidationError.model)
     @API.response(code=403, description='Not authorized')
     def post(self):
         GDLConfig.JWT_VALIDATOR.verify_role(flask.request, 'games:write', API)
@@ -76,7 +38,7 @@ class Games(Resource):
 class Gamer(Resource):
 
     @API.doc('Get information about a single game')
-    @API.marshal_with(game)
+    @API.marshal_with(Game.model)
     @API.response(code=404, description='Not Found')
     def get(self, game_uuid):
         response = game_repository.with_uuid(game_uuid)
@@ -84,9 +46,9 @@ class Gamer(Resource):
             API.abort(404, "Game with id {} was not found.".format(game_uuid))
 
     @API.doc('Update information about a game', security='oauth2')
-    @API.expect(game, validate=True)
-    @API.marshal_with(game)
-    @API.response(code=400, description='When a validation error occurs', model=validation_error)
+    @API.expect(Game.field_doc, validate=True)
+    @API.marshal_with(Game.model)
+    @API.response(code=400, description='When a validation error occurs', model=ValidationError.model)
     @API.response(code=403, description='Not authorized')
     @API.response(code=404, description='Not Found')
     def put(self, game_uuid):
