@@ -1,6 +1,7 @@
 from flask_restplus import Namespace, fields
+from gdl_config import GDLConfig
 
-API = Namespace('games', description='Game related operations')
+API = GDLConfig.GAMES_API_V2
 
 class CoverImage:
     field_doc = {

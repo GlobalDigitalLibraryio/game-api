@@ -1,11 +1,18 @@
 import uuid
-
+from flask_restplus import fields
 from language_tags import tags
 
 from gdl_config import GDLConfig
 
 
 class ValidationError(ValueError):
+    field_doc = {
+        'message': fields.String(required=False, description='Description of the error'),
+        'errors': fields.Raw(description='Detailed information about fields that did not pass validation')
+    }
+
+    model = GDLConfig.GAMES_API_V2.model('ValidationError', field_doc)
+
     def __init__(self, message, errors=None):
         self.errors = {} if errors is None else errors
         self.message = message

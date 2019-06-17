@@ -26,14 +26,16 @@ class GameRepository:
         else:
             return None
 
-    def all(self, lang, page, page_size):
+    def all_v1(self):
+        return [Game.to_api_structure(x) for x in self.game_table.scan()['Items']]
+
+    def all_with_language_v1(self, language):
+        items = self.game_table.scan(FilterExpression=Attr('language').eq(language))
+        return [Game.to_api_structure(x) for x in items['Items']]
+
+    def all_v2(self, lang, lang_name, page, page_size):
         data = self.game_table.scan(FilterExpression=Attr('language').eq(lang))['Items']
         totalCount = len(data)
-
-        if not tags.check(lang):
-            lang = 'en'
-
-        lang_name = tags.description(lang)[0]
 
         if not 1 < page_size <= totalCount:
             page_size = totalCount
@@ -42,7 +44,6 @@ class GameRepository:
         end_index = page_size * page
 
         data = data[start_index:end_index]
-
         return {
             "totalCount": totalCount,
             "page": page,
@@ -51,7 +52,7 @@ class GameRepository:
                 "code": lang,
                 "name": lang_name
             },
-            "results": [Game.to_api_structure(x) for x in data]
+            "results": [] if lang_name == 'unknown' else [Game.to_api_structure(x) for x in data]
         }
 
     def add(self, game_json):

@@ -2,12 +2,13 @@ import flask
 from flask_restplus import Resource, Namespace, fields
 from language_tags import tags
 from game_model import Game, GameResponse
-from validation_model import ValidationError
+from models import ValidationError
+from language_tags import tags
 
 from game_repository import GameRepository
 from gdl_config import GDLConfig
 
-API = Namespace('games', description='Game related operations')
+API = GDLConfig.GAMES_API_V2
 
 game_repository = GameRepository(GDLConfig.GAMES_TABLE)
 
@@ -22,7 +23,9 @@ class Games(Resource):
         page = flask.request.args.get('page', default=1, type=int)
         page_size = flask.request.args.get('page-size', default=10, type=int)
         
-        return game_repository.all(lang, page, page_size)
+        lang_name = tags.description(lang)[0] if tags.check(lang) else 'unknown'
+
+        return game_repository.all_v2(lang, lang_name, page, page_size)
 
     @API.doc('Add a game', security='oauth2')
     @API.marshal_with(Game.model)
