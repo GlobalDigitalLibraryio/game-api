@@ -52,7 +52,7 @@ class GameRepository:
                 "code": lang,
                 "name": lang_name
             },
-            "results": [] if lang_name == 'unknown' else [Game.to_api_structure(x) for x in data]
+            "results": [Game.to_api_structure(x) for x in data]
         }
 
     def add(self, game_json):

@@ -1,7 +1,8 @@
 import flask
 from flask_restplus import Resource, Namespace, fields
 from language_tags import tags
-from game_model import Game, GameResponse
+from model.Game import Game
+from model.GameResponse import GameResponse
 from models import ValidationError
 from language_tags import tags
 

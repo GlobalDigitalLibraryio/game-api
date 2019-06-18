@@ -24,7 +24,7 @@ authorizations = {
 api = Api(blueprint, title="Game Service", description="Service for retrieving games from the GDL", authorizations=authorizations, version='1.0',
           terms_url='https://digitallibrary.io', contact='Christer Gundersen',
           contact_email='support@digitallibrary.io', contact_url='https://digitallibrary.io',
-          license='Apache License 2.0', license_url='https://www.apache.org/licenses/LICENSE-2.0')
+          license='Apache License 2.0', license_url='https://www.apache.org/licenses/LICENSE-2.0', doc=False)
 
 api.add_namespace(language_controller.API, path='/v1/languages')
 api.add_namespace(GDLConfig.GAMES_API_V1, path='/v1/games')
@@ -34,7 +34,7 @@ DOC_API = Namespace('api-docs', description="API Documentation for the API")
 
 
 @DOC_API.route("/", strict_slashes=False)
-@DOC_API.doc(True)
+@DOC_API.doc(False)
 class ApiDocumentation(Resource):
     def get(self):
         swagger = api.__schema__
