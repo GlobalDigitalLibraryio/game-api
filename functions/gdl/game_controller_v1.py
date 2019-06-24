@@ -5,7 +5,7 @@ from language_tags import tags
 from game_repository import GameRepository
 from gdl_config import GDLConfig
 
-API = Namespace('games', description='Game related operations')
+API = GDLConfig.GAMES_API_V1
 
 cover_image = API.model('CoverImage', {
     'imageId': fields.Integer(required=True, description='Unique identifier of the image'),
@@ -42,7 +42,7 @@ class Games(Resource):
     @API.marshal_list_with(game, skip_none=True)
     def get(self):
         lang = flask.request.args.get('language')
-        return game_repository.all_with_language(lang) if lang else game_repository.all()
+        return game_repository.all_with_language_v1(lang) if lang else game_repository.all_v1()
 
     @API.doc('Add a game', security='oauth2')
     @API.marshal_with(game)
@@ -94,4 +94,3 @@ class InternGame(Resource):
         if not response:
             API.abort(404, "Game with external_id {} was not found.".format(external_id))
         return response
-

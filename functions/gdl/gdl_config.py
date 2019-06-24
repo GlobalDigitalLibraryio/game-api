@@ -2,7 +2,7 @@ import boto3
 import os
 from image_api_client import ImageApiClient
 from jwt_validate import JWTValidator
-
+from flask_restplus import Namespace
 
 def get_dynamodb(is_offline):
     if is_offline:
@@ -18,3 +18,6 @@ class GDLConfig:
     IMAGE_API_CLIENT = ImageApiClient(
         os.environ['IMAGE_API_OFFLINE_ADDRESS'] if IS_OFFLINE else 'http://image-api.gdl-local')
     JWT_VALIDATOR = JWTValidator(GDL_ENVIRONMENT)
+    GAMES_API_V1 = Namespace('Games v1', description='Game related operations')
+    GAMES_API_V2 = Namespace('Games v2', description='Game related operations')
+    LANGUAGE_API = Namespace('Languages', description="Language related operations")
