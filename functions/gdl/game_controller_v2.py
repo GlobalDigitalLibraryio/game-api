@@ -4,7 +4,6 @@ from language_tags import tags
 from model.Game import Game
 from model.GameResponse import GameResponse
 from models import ValidationError
-from language_tags import tags
 
 from game_repository import GameRepository
 from gdl_config import GDLConfig
@@ -24,9 +23,10 @@ class Games(Resource):
         page = flask.request.args.get('page', default=1, type=int)
         page_size = flask.request.args.get('page-size', default=10, type=int)
         
-        lang_name = tags.description(lang)[0] if tags.check(lang) else 'unknown'
+        formatted_lang = tags.tag(lang).format
+        lang_name = tags.description(lang)[0] if tags.check(lang) else None
 
-        return game_repository.all_v2(lang, lang_name, page, page_size)
+        return game_repository.all_v2(formatted_lang, lang_name, page, page_size)
 
     @API.doc('Add a game', security='oauth2')
     @API.marshal_with(Game.model)

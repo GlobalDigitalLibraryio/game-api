@@ -4,7 +4,7 @@ from gdl_config import GDLConfig
 class Language:
     field_doc = {
         'code': fields.String(required=True, description="BCP47 language code"),
-        'name': fields.String(required=True, description="Language description of language code")
+        'name': fields.String(required=False, description="Language description of language code if name exist")
     }
 
     model = GDLConfig.GAMES_API_V2.model('Language', field_doc)
