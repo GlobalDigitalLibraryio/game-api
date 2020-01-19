@@ -2,7 +2,7 @@ from flask_restplus import fields
 from gdl_config import GDLConfig
 
 from model.Language import Language
-from model.Game import Game
+from model.Game_v2 import Game
 
 class GameResponse:
     field_doc = {
