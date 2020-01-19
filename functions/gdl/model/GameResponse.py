@@ -2,7 +2,7 @@ from flask_restplus import fields
 from gdl_config import GDLConfig
 
 from model.Language import Language
-from model.Game import Game
+from model.Game_v2 import Game
 
 class GameResponse:
     field_doc = {
@@ -15,7 +15,7 @@ class GameResponse:
             fields.Nested(Game.model, required=True, description='Game data', skip_none=True), skip_none=True),
     }
 
-    model = GDLConfig.GAMES_API_V2.model('GameResponse', field_doc)
+    model = GDLConfig.GAMES_API_V3.model('GameResponse', field_doc)
 
     def __init__(self, totalCount, page, pageSize, language, results):
         self.__totalCount = totalCount

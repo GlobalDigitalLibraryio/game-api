@@ -8,7 +8,7 @@ class CoverImage:
         'alttext': fields.String(required=False, description='An alternative text for the image')
     }
 
-    model = GDLConfig.GAMES_API_V2.model('CoverImage', field_doc)
+    model = GDLConfig.GAMES_API_V3.model('CoverImage', field_doc)
 
     def __init__(self, imageId, url, alttext):
         self.__imageId = imageId

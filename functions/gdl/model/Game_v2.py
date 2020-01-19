@@ -1,5 +1,6 @@
 from flask_restplus import fields
 from gdl_config import GDLConfig
+from model.License import License
 from model.CoverImage import CoverImage
 
 class Game:
@@ -10,13 +11,13 @@ class Game:
         'description': fields.String(required=True, description='A description of the game'),
         'language': fields.String(required=True, description='In which language the game is. Represented as a BCP47 tag'),
         'url': fields.String(required=True, description='The url for where the game is found'),
-        'license': fields.String(required=True, description='Licensing information about the game'),
+        'license': fields.Nested(License.model, required=True, description='Licensing information about the game'),
         'source': fields.String(required=True, description='From whom GDL has aquired the game'),
         'publisher': fields.String(required=True, description='The publisher of the game'),
         'coverimage': fields.Nested(CoverImage.model, required=True, skip_none=True, description='Information about the cover image of the game')
     }
 
-    model = GDLConfig.GAMES_API_V2.model('Game', field_doc)
+    model = GDLConfig.GAMES_API_V3.model('Game', field_doc)
 
     def __init__(self, game_uuid, external_id, title, description, language, url, license, source, publisher, coverimage):
         self.__game_uuid = game_uuid

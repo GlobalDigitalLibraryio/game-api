@@ -9,16 +9,16 @@ class License:
         'url': fields.String(required=False, description='An alternative text for the image')
     }
 
-    model = GDLConfig.GAMES_API_V2.model('License', field_doc)
+    model = GDLConfig.GAMES_API_V3.model('License', field_doc)
 
     def __init__(self, name, url, description):
-        self.name = name
+        self.__name = name
         self.__url = url
         self.__description = description
 
     @property
     def name(self):
-        return self.name
+        return self.__name
 
     @property
     def url(self):
@@ -31,8 +31,9 @@ class License:
     @staticmethod
     def medadata_for(license_name):
         license = license_dict[license_name.lower()]
+
         return {
-            "name": license['name'],
-            "description": license['description'],
-            "url": license['url']
+            'name': license['name'],
+            'description': license['description'],
+            'url': license['url']
         }

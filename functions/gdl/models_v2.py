@@ -1,6 +1,8 @@
 import uuid
 from flask_restplus import fields
 from language_tags import tags
+from model.License import License
+from licenses import license_dict
 from gdl_config import GDLConfig
 
 
@@ -10,7 +12,7 @@ class ValidationError(ValueError):
         'errors': fields.Raw(description='Detailed information about fields that did not pass validation')
     }
 
-    model = GDLConfig.GAMES_API_V2.model('ValidationError', field_doc)
+    model = GDLConfig.GAMES_API_V3.model('ValidationError', field_doc)
 
     def __init__(self, message, errors=None):
         self.errors = {} if errors is None else errors
@@ -34,6 +36,10 @@ class Game:
         language_tag = tags.tag(api_input['language'])
         if not language_tag.valid:
             errors['language'] = '{} is not a supported language.'.format(api_input['language'])
+
+        license = api_input['license']
+        if license.lower() not in license_dict:
+            errors['license'] = '{} is not a valid license.'.format(license)
 
         if len(errors) > 0:
             raise ValidationError('Input payload validation failed', errors=errors)
@@ -64,7 +70,6 @@ class Game:
             'description': db_output['description'],
             'language': tags.tag(db_output['language']).format,
             'url': db_output['url'],
-            'license': db_output['license'],
             'source': db_output['source'],
             'publisher': db_output['publisher']
         }
@@ -72,4 +77,8 @@ class Game:
         if cover_image_details:
             api_response['coverimage'] = cover_image_details.as_dict()
 
+        license_details = License.medadata_for(db_output['license'])
+        if license_details:
+            api_response['license'] = license_details
+        # print(api_response)
         return api_response

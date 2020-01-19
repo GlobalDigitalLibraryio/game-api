@@ -18,6 +18,7 @@ class GDLConfig:
     IMAGE_API_CLIENT = ImageApiClient(
         os.environ['IMAGE_API_OFFLINE_ADDRESS'] if IS_OFFLINE else 'http://image-api.gdl-local')
     JWT_VALIDATOR = JWTValidator(GDL_ENVIRONMENT)
-    GAMES_API_V1 = Namespace('Games v1', description='Game related operations')
-    GAMES_API_V2 = Namespace('Games v2', description='Game related operations')
+    GAMES_API_V1 = Namespace('Games v1', description='Game related operations') # deprecated
+    GAMES_API_V2 = Namespace('Games v2', description='Game related operations') # deprecated
+    GAMES_API_V3 = Namespace('Games v3', description='Game related operations')
     LANGUAGE_API = Namespace('Languages', description="Language related operations")
