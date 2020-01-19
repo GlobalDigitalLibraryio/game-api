@@ -15,7 +15,7 @@ class GameResponse:
             fields.Nested(Game.model, required=True, description='Game data', skip_none=True), skip_none=True),
     }
 
-    model = GDLConfig.GAMES_API_V3.model('GameResponse', field_doc)
+    model = GDLConfig.GAMES_API_V2.model('GameResponse', field_doc)
 
     def __init__(self, totalCount, page, pageSize, language, results):
         self.__totalCount = totalCount
