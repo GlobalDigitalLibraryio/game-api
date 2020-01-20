@@ -1,3 +1,9 @@
+"""
+A version 2 of GameResponse.py to allow backward compatibility for end users.
+Changes in this file is an updated Game_v2 model that has a new License output.
+
+TODO: delete deprecated version e.g GameResponse.py and rename this file back to GameResponse.py
+"""
 from flask_restplus import fields
 from gdl_config import GDLConfig
 

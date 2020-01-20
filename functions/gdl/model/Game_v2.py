@@ -1,3 +1,9 @@
+"""
+A version 2 of Game.py to allow backward compatibility for end users.
+Changes in this file is an updated License model that has a new License output.
+
+TODO: delete deprecated version e.g Game.py and rename this file back to Game.py
+"""
 from flask_restplus import fields
 from gdl_config import GDLConfig
 from model.License import License

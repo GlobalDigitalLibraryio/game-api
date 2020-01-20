@@ -1,3 +1,9 @@
+"""
+A version 3 of game_controller.py to allow backward compatibility for end users.
+Changes in this file is an updated GAMES_API_V3 model that has a new License output.
+
+TODO: delete deprecated version e.g game_controller.py and rename this file back to game_controller.py
+"""
 import flask
 from flask_restplus import Resource, Namespace, fields
 from language_tags import tags

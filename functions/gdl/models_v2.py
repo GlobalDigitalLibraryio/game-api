@@ -1,3 +1,9 @@
+"""
+A version 2 of models.py to allow backward compatibility for end users.
+Changes in this file is an updated GAMES_API_V3 model that has a new License output.
+
+TODO: delete deprecated version e.g models.py and rename this file back to models.py
+"""
 import uuid
 from flask_restplus import fields
 from language_tags import tags
@@ -80,5 +86,5 @@ class Game:
         license_details = License.medadata_for(db_output['license'])
         if license_details:
             api_response['license'] = license_details
-        # print(api_response)
+
         return api_response
