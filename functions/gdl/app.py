@@ -4,6 +4,7 @@ from flask_restplus import Api, Resource, Namespace
 import language_controller
 import game_controller_v1
 import game_controller_v2
+import game_controller_v3
 from gdl_config import GDLConfig
 
 from models import ValidationError
@@ -29,6 +30,7 @@ api = Api(blueprint, title="Game Service", description="Service for retrieving g
 api.add_namespace(language_controller.API, path='/v1/languages')
 api.add_namespace(GDLConfig.GAMES_API_V1, path='/v1/games')
 api.add_namespace(GDLConfig.GAMES_API_V2, path='/v2/games')
+api.add_namespace(GDLConfig.GAMES_API_V3, path='/v3/games')
 
 DOC_API = Namespace('api-docs', description="API Documentation for the API")
 

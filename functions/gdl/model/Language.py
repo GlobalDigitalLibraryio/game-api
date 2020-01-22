@@ -7,7 +7,7 @@ class Language:
         'name': fields.String(required=False, description="Language description of language code if name exist")
     }
 
-    model = GDLConfig.GAMES_API_V2.model('Language', field_doc)
+    model = GDLConfig.GAMES_API_V3.model('Language', field_doc)
 
     def __init__(self, code, name):
         self.__code = code

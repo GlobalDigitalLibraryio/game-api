@@ -1,8 +1,14 @@
+"""
+A version 2 of GameResponse.py to allow backward compatibility for end users.
+Changes in this file is an updated Game_v2 model that has a new License output.
+
+TODO: delete deprecated version e.g GameResponse.py and rename this file back to GameResponse.py
+"""
 from flask_restplus import fields
 from gdl_config import GDLConfig
 
 from model.Language import Language
-from model.Game import Game
+from model.Game_v2 import Game
 
 class GameResponse:
     field_doc = {
@@ -15,7 +21,7 @@ class GameResponse:
             fields.Nested(Game.model, required=True, description='Game data', skip_none=True), skip_none=True),
     }
 
-    model = GDLConfig.GAMES_API_V3.model('GameResponse', field_doc)
+    model = GDLConfig.GAMES_API_V2.model('GameResponse', field_doc)
 
     def __init__(self, totalCount, page, pageSize, language, results):
         self.__totalCount = totalCount
