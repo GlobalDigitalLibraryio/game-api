@@ -8,13 +8,13 @@ provider:
   endpointType: PRIVATE
   role: arn:aws:iam::${env:GDL_ACCOUNT}:role/${env:SERVERLESS_IAM_ROLE}
   tags:
-    VERSION: "0.1"
+    VERSION: '0.1'
   deploymentBucket:
     name: ${env:GDL_SERVERLESS_DEPLOYMENT_BUCKET}
 
   resourcePolicy:
     - Effect: Allow
-      Principal: "*"
+      Principal: '*'
       Action: execute-api:Invoke
       Resource:
         - execute-api:/*/*/*
@@ -43,7 +43,6 @@ functions:
     events:
       - http: ANY /
       - http: 'ANY {proxy+}'
-
 
 resources:
   Resources:
@@ -100,7 +99,7 @@ custom:
       inMemory: true
       migrate: true
   pythonRequirements:
-    dockerizePip: non-linux
+    dockerizePip: false
     slim: true
   warmup:
     enabled:
@@ -125,4 +124,3 @@ custom:
         evaluationPeriods: 2
         comparisonOperator: GreaterThanOrEqualToThreshold
         treatMissingData: missing
-

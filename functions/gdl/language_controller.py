@@ -16,6 +16,6 @@ class LanguageController(Resource):
     @API.doc('List of available languages')
     @API.marshal_with(language, True)
     def get(self):
-        var languages = [item['language'] for item in GDLConfig.GAMES_TABLE.scan()['Items']]
-        var unique = list(dict.fromkeys(languages))
-        return [{'code': x, 'description': ', '.join(tags.description(x))} for x in unique
+        languages = [item['language'] for item in GDLConfig.GAMES_TABLE.scan()['Items']]
+        unique = list(dict.fromkeys(languages))
+        return [{'code': x, 'description': ', '.join(tags.description(x))} for x in unique]
