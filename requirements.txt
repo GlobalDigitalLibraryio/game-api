@@ -11,7 +11,7 @@ Flask-json-schema==0.0.5
 flask-restplus==0.12.1
 idna==2.8
 itsdangerous==1.1.0
-Jinja2==2.10
+Jinja2==2.11.3
 jmespath==0.9.4
 jsonschema==3.0.1
 language-tags==0.4.6
